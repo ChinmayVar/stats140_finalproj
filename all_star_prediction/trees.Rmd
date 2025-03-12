@@ -1,0 +1,70 @@
+---
+title: "All-Star Modeling"
+author: "Kevin"
+date: "2025-03-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(caret)
+```
+
+## Loading Data
+
+```{r}
+all_star_data = read.csv('all-star-dataset.csv')[-c(1, 2, 3)]
+all_star_data$all_star <- as.factor(all_star_data$all_star)
+```
+
+## Trees
+
+Splitting the data into training/testing sets
+
+```{r}
+train_indeces <- createDataPartition(all_star_data$all_star, p = 0.8, list=FALSE)
+train <- all_star_data[train_indeces,]
+test <- all_star_data[-train_indeces,]
+```
+
+The decision tree
+
+```{r}
+tree_model <- rpart(data=train, all_star~., method='class')
+rpart.plot(tree_model)
+```
+
+Evaluating the decision tree
+
+```{r}
+predictions <- predict(tree_model, test, type='class')
+confusionMatrix(predictions, test$all_star)
+```
+
+The random forest
+
+```{r}
+rf_model <- randomForest(all_star~., data=train, proximity=TRUE)
+rf_model
+```
+
+Evaluating the random forest
+
+```{r}
+predictions <- predict(rf_model, test, type='class')
+confusionMatrix(predictions, test$all_star)
+
+varImpPlot(rf_model, main = 'Feature Importance in the Random Forest')
+```
+
+
+
+
+
+
+
+
+
