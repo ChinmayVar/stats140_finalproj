@@ -1,0 +1,64 @@
+---
+title: "Stats 140XP Final Project EDA"
+author: "Tyler Chia - 105940878"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(reshape2)
+
+nba <- read.csv("all-star-dataset.csv")
+```
+
+```{r}
+summary(nba)
+```
+
+# top scorers each season
+```{r}
+nba %>% 
+  group_by(season) %>% 
+  top_n(1, pts) %>% 
+  select(season, player, pts)
+```
+
+# correlation heatmap
+```{r}
+cor_matrix <- cor(nba %>% select_if(is.numeric), use = "complete.obs")
+
+melted_cor <- melt(cor_matrix)
+
+ggplot(data = melted_cor, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1,1), space = "Lab") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+    axis.title.x = element_blank(),  # Remove x-axis title
+    axis.title.y = element_blank()   # Remove y-axis title
+  ) +
+  labs(title = "Correlation Heatmap of NBA Stats")
+```
+
+# distribution of points scored
+```{r}
+ggplot(nba, aes(x = pts)) +
+  geom_histogram(binwidth = 50, fill = "steelblue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Total Season Points Scored", x = "Total Points", y = "Player Count") +
+  theme_minimal()
+```
+
+# total points vs assists for a single playaer
+```{r}
+ggplot(nba, aes(x = ast, y = pts)) +
+  geom_point(alpha = 0.5, color = "blue") +  # Scatter points
+  geom_smooth(method = "lm", color = "red", se = TRUE) +  # Regression line
+  labs(title = "Scatter Plot of Total Assists vs. Points (Per Player, Per Season)",
+       x = "Assists (ast)", 
+       y = "Points (pts)") +
+  theme_minimal()
+```
+
